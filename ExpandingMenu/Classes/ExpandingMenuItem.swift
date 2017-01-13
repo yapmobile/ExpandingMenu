@@ -29,6 +29,18 @@ open class ExpandingMenuItem: UIView {
         }
     }
     
+    open var titleFont: UIFont? {
+        get {
+            return self.titleButton?.titleLabel?.font
+        }
+        set (newFont) {
+            if let tb = self.titleButton {
+                tb.titleLabel?.font = newFont
+                tb.sizeToFit()
+            }
+        }
+    }
+    
     open var titleMargin: CGFloat = 8.0
     
     open var titleColor: UIColor? {
@@ -49,7 +61,7 @@ open class ExpandingMenuItem: UIView {
     
     var index: Int = 0
     weak var delegate: ExpandingMenuButton?
-    open var titleButton:UIButton?
+    fileprivate(set) var titleButton:UIButton?
     fileprivate var frontImageView: UIImageView
     fileprivate var tappedAction: (() -> Void)?
     
