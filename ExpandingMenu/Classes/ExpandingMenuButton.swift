@@ -38,6 +38,8 @@ open class ExpandingMenuButton: UIView, UIGestureRecognizerDelegate {
     // MARK: Public Properties
     open var menuItemMargin: CGFloat = 16.0
     
+    open var shouldCloseMenuOnItemSelected = true
+    
     open var allowSounds: Bool = true {
         didSet {
             self.configureSounds()
@@ -170,6 +172,8 @@ open class ExpandingMenuButton: UIView, UIGestureRecognizerDelegate {
     
     // MARK: - Menu Item Tapped Action
     open func menuItemTapped(_ item: ExpandingMenuItem) {
+        guard self.shouldCloseMenuOnItemSelected else { return }
+        
         self.willDismissMenuItems?(self)
         self.isAnimating = true
         
