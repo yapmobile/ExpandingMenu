@@ -39,6 +39,13 @@ open class ExpandingMenuButton: UIView, UIGestureRecognizerDelegate {
     open var menuItemMargin: CGFloat = 16.0
     
     open var shouldCloseMenuOnItemSelected = true
+    open var shouldEnableBottomView = true {
+        didSet {
+            self.bottomView.frame.size.width = self.shouldEnableBottomView ? self.expandingSize.width : 0
+            self.bottomView.frame.size.height = self.shouldEnableBottomView ? self.expandingSize.height : 0
+            self.bottomView.isUserInteractionEnabled = self.shouldEnableBottomView
+        }
+    }
     
     open var allowSounds: Bool = true {
         didSet {
@@ -129,7 +136,6 @@ open class ExpandingMenuButton: UIView, UIGestureRecognizerDelegate {
             self.addSubview(self.centerButton)
             
             // Configure bottom view
-            //
             self.bottomView = UIView(frame: CGRect(x: 0.0, y: 0.0, width: self.expandingSize.width, height: self.expandingSize.height))
             self.bottomView.backgroundColor = self.bottomViewColor
             self.bottomView.alpha = 0.0
@@ -419,17 +425,36 @@ open class ExpandingMenuButton: UIView, UIGestureRecognizerDelegate {
             AudioServicesPlaySystemSound(self.expandingSound)
         }
         
+        
+        self.defaultCenterPoint = self.center
+        
         // Configure center button expanding
         //
         // 1. Copy the current center point and backup default center point
         //
-        self.centerButton.center = self.center
-        self.defaultCenterPoint = self.center
         
         // 2. Resize the frame
         //
-        self.frame = CGRect(x: 0.0, y: 0.0, width: self.expandingSize.width, height: self.expandingSize.height)
-        self.center = CGPoint(x: self.expandingSize.width / 2.0, y: self.expandingSize.height / 2.0)
+        if self.shouldEnableBottomView {
+            self.centerButton.center = self.center
+            self.frame = CGRect(x: 0.0, y: 0.0, width: self.expandingSize.width, height: self.expandingSize.height)
+            self.center = CGPoint(x: self.expandingSize.width / 2.0, y: self.expandingSize.height / 2.0)
+        } else {
+            
+            // so ugly, need to precalculate item last distance to adjust self.height
+            var lastDistance: CGFloat = 0.0
+            var lastItemSize: CGSize = self.centerButton.bounds.size
+            for (_, item) in self.menuItems.enumerated() {
+
+                let distance: CGFloat = self.makeDistanceFromCenterButton(item.bounds.size, lastDisance: lastDistance, lastItemSize: lastItemSize)
+                lastDistance = distance
+                lastItemSize = item.bounds.size
+            }
+            
+            self.frame.origin.y -= lastDistance
+            self.frame.size.height = lastDistance + self.foldedSize.height
+            self.centerButton.frame.origin.y = self.frame.height - self.foldedSize.height
+        }
         
         self.insertSubview(self.bottomView, belowSubview: self.centerButton)
         
